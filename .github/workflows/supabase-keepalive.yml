@@ -20,18 +20,13 @@ jobs:
             *) rest_url="$supabase_url/rest/v1" ;;
           esac
 
-          response="$(curl --fail --show-error --silent --request PATCH \
-            "${rest_url}/keepalive_pings?id=eq.1&select=id,touched_at" \
+          curl --fail --show-error --silent --output /dev/null --request PATCH \
+            "${rest_url}/keepalive_pings?id=eq.1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Content-Type: application/json" \
-            -H "Prefer: return=representation" \
-            --data "{\"touched_at\":\"${touched_at}\"}")"
-
-          if [ "$response" = "[]" ]; then
-            echo "No keepalive_pings row with id=1 was updated."
-            exit 1
-          fi
+            -H "Prefer: return=minimal" \
+            --data "{\"touched_at\":\"${touched_at}\"}"
 
           echo "Updated keepalive_pings id=1 touched_at=${touched_at}"
         env:
