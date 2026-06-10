@@ -245,7 +245,11 @@ export function SheetEditor({
 
     // Add a new column
     const addColumn = () => {
-        const newSheet = { ...sheet }
+        // Deep-copy rows so we don't mutate existing history snapshots
+        const newSheet = {
+            ...sheet,
+            rows: sheet.rows.map(row => ({ ...row, cells: [...row.cells] as DefaultCellTypes[] })),
+        }
         const currentColCount = newSheet.rows[0]?.cells.length || 0
 
         const getColumnLetter = (index: number): string => {
@@ -282,7 +286,11 @@ export function SheetEditor({
 
     // Add a new row
     const addRow = () => {
-        const newSheet = { ...sheet }
+        // Deep-copy rows so we don't mutate existing history snapshots
+        const newSheet = {
+            ...sheet,
+            rows: sheet.rows.map(row => ({ ...row, cells: [...row.cells] as DefaultCellTypes[] })),
+        }
         const newRowIndex = newSheet.rows.length
         const colCount = newSheet.rows[0]?.cells.length || 0
 
