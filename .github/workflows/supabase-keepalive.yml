@@ -1,0 +1,24 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Run once daily at 08:00 South Africa time (06:00 UTC) to keep the free-tier Supabase project active.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update Supabase keepalive timestamp
+        run: |
+          touched_at="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+          curl --fail --show-error --silent --request PATCH \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/keepalive_pings?id=eq.1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            --data "{\"touched_at\":\"${touched_at}\"}"
