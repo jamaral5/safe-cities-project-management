@@ -15,13 +15,24 @@ jobs:
         run: |
           touched_at="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
           supabase_url="${SUPABASE_URL%/}"
+          case "$supabase_url" in
+            */rest/v1) rest_url="$supabase_url" ;;
+            *) rest_url="$supabase_url/rest/v1" ;;
+          esac
 
-          curl --fail --show-error --silent --request PATCH \
-            "${supabase_url}/keepalive_pings?id=eq.1" \
+          response="$(curl --fail --show-error --silent --request PATCH \
+            "${rest_url}/keepalive_pings?id=eq.1&select=id,touched_at" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Content-Type: application/json" \
-            -H "Prefer: return=minimal" \
-            --data "{\"touched_at\":\"${touched_at}\"}"
+            -H "Prefer: return=representation" \
+            --data "{\"touched_at\":\"${touched_at}\"}")"
+
+          if [ "$response" = "[]" ]; then
+            echo "No keepalive_pings row with id=1 was updated."
+            exit 1
+          fi
+
+          echo "Updated keepalive_pings id=1 touched_at=${touched_at}"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
